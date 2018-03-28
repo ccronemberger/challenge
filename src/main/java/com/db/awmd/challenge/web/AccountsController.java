@@ -42,13 +42,13 @@ public class AccountsController {
     }
 
     @GetMapping(path = "/{accountId}")
-    public ResponseEntity<Account> getAccount(@PathVariable String accountId) {
+    public ResponseEntity getAccount(@PathVariable String accountId) {
         log.info("Retrieving account for id {}", accountId);
         try {
-            return new ResponseEntity<>(accountsService.getAccount(accountId), HttpStatus.OK);
+            return new ResponseEntity(accountsService.getAccount(accountId), HttpStatus.OK);
         } catch (InvalidAccountException e) {
             log.error("error", e);
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -61,7 +61,7 @@ public class AccountsController {
             return new ResponseEntity(HttpStatus.OK);
         } catch (InvalidAmountException | NotEnoughBalanceException | InvalidAccountException e) {
             log.error("error", e);
-            return new ResponseEntity(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 }
