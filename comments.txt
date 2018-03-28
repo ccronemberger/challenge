@@ -8,7 +8,6 @@ Things missing:
   This way MockMvc can be autowired instead of being created manually.
 - monitoring facilities
 - transaction management
-- could return better errors messages to the client instead of just BAD_REQUEST
 - validation of initial balance should not happen only at controller level
 - I don't think we should have a getter for the attribute accountsRepository in the class AccountsService, it is used
   only in tests and we can get this reference via dependency injection instead
