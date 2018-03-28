@@ -1,0 +1,16 @@
+Things missing:
+
+- authentication, authorization, so only the owner of an account can request to transfer funds from it
+- Open API (Swagger)
+- Locking was implemented using synchronized blocks and this will not work in a cluster. Could use optimistic lock instead.
+- Ideally the AccountsControllerTest should use the annotation @WebMvcTest with the controller being tested,
+  so not all controllers and not all beans of the application are started because we want to test only the AccountsController.
+  This way MockMvc can be autowired instead of being created manually.
+- monitoring facilities
+- transaction management
+- could return better errors messages to the client instead of just BAD_REQUEST
+- validation of initial balance should not happen only at controller level
+- I don't think we should have a getter for the attribute accountsRepository in the class AccountsService, it is used
+  only in tests and we can get this reference via dependency injection instead
+- get account is now returning BAD_REQUEST in case of invalid account id instead of empty response
+
