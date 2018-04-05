@@ -17,3 +17,5 @@ Things missing:
 - I tried to add a validation annotation to the transfer method in the controller class, but it does not work for path
   params, so I would create a bean with the amount to allow this validation and also to allow adding more attributes
   in the future.
+- Depending on the NotificationService implementation I think I would change how it is invoked to make sure it would
+  have the smallest possible impact on the request execution time. Could have a worker thread or use a queue.
