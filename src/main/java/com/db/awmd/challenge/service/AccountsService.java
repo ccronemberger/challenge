@@ -10,8 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 public class AccountsService {
@@ -44,27 +42,29 @@ public class AccountsService {
             throw new InvalidAmountException(amount);
         }
 
-        List<Account> accounts = new ArrayList<>();
-        accounts.add(fromAccount);
-        accounts.add(toAccount);
-        // need to sort to avoid deadlocks
-        accounts.sort((a,b) -> a.getAccountId().compareTo(b.getAccountId()));
+        addToBalance(amount.negate(), fromAccount);
+        // this will not throw NotEnoughBalanceException because amount is positive
+        addToBalance(amount, toAccount);
 
-        // lock both accounts while operating on them
-        synchronized (accounts.get(0)) {
-            synchronized (accounts.get(1)) {
-                BigDecimal newFromBalance = fromAccount.getBalance().add(amount.negate());
+        notificationService.notifyAboutTransfer(fromAccount, amount + " transferred to " + toAccount.getAccountId());
+        notificationService.notifyAboutTransfer(toAccount, amount + " received from " + fromAccount.getAccountId());
+    }
 
-                if (newFromBalance.compareTo(BigDecimal.ZERO) < 0) {
-                    throw new NotEnoughBalanceException(fromAccount.getBalance(), amount);
-                }
-
-                fromAccount.setBalance(newFromBalance);
-                toAccount.setBalance(toAccount.getBalance().add(amount));
-
-                notificationService.notifyAboutTransfer(fromAccount, amount + " transferred to " + toAccount.getAccountId());
-                notificationService.notifyAboutTransfer(toAccount, amount + " received from " + fromAccount.getAccountId());
+    /**
+     * Calculate new balance and try to atomically set it. Retry until it works.
+     * @param amount to be added
+     * @param account the account
+     * @throws NotEnoughBalanceException when amount is negative it may throw this exception if the balance is not enough
+     */
+    private void addToBalance(BigDecimal amount, Account account) throws NotEnoughBalanceException {
+        BigDecimal originalBalance;
+        BigDecimal newBalance;
+        do {
+            originalBalance = account.getBalance();
+            newBalance = originalBalance.add(amount);
+            if (newBalance.compareTo(BigDecimal.ZERO) < 0) {
+                throw new NotEnoughBalanceException(account.getBalance(), amount);
             }
-        }
+        } while (!account.tryToSet(originalBalance, newBalance));
     }
 }
