@@ -1,15 +1,19 @@
 Things missing:
 
-- authentication, authorization, so only the owner of an account can request to transfer funds from it
-- Open API (Swagger)
-- Locking was implemented using synchronized blocks and this will not work in a cluster. Could use optimistic lock instead.
+- Authentication, authorization, so only the owner of an account can request to transfer funds from it
+- Open API (Swagger) - so client apps can startup faster and it would also allow manual requests.
+- Transfer between accounts are done by first subtracting the amount from the source account and then by adding it to
+  the target account. If the system crashes between these two times it would become inconsistent, but given that
+  in the current code everything is held on memory this should not be an issue. In the case of using a database ideally
+  both operations should be in the same local transaction.
 - Ideally the AccountsControllerTest should use the annotation @WebMvcTest with the controller being tested,
   so not all controllers and not all beans of the application are started because we want to test only the AccountsController.
   This way MockMvc can be autowired instead of being created manually.
-- monitoring facilities
-- transaction management
-- validation of initial balance should not happen only at controller level
+- Monitoring facilities, so the support team can monitor the system more easily.
+- Validation of initial balance should not happen only at controller level.
 - I don't think we should have a getter for the attribute accountsRepository in the class AccountsService, it is used
   only in tests and we can get this reference via dependency injection instead
-- get account is now returning BAD_REQUEST in case of invalid account id instead of empty response
-
+- Get account is now returning BAD_REQUEST in case of invalid account id instead of empty response.
+- I tried to add a validation annotation to the transfer method in the controller class, but it does not work for path
+  params, so I would create a bean with the amount to allow this validation and also to allow adding more attributes
+  in the future.
